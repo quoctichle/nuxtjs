@@ -80,7 +80,7 @@ const wheelAngle = ref(0)
 const spinning = ref(false)
 const showPopup = ref(false)
 const currentPrize = ref('')
-const code = localStorage.getItem('spin_code_used') || ''
+const code = process.client ? localStorage.getItem('spin_code_used') || '' : ''
 const outOfTurn = ref(false)
 const hasSpun = ref(false)
 const codeInfo = ref(null)
@@ -191,6 +191,7 @@ function showOutOfTurnPopup() {
 }
 
 onMounted(async () => {
+  if (!process.client) return
   if (!code) {
     alert('Mã không hợp lệ!')
     router.replace('/user/login')
@@ -206,7 +207,9 @@ onMounted(async () => {
       return
     }
     if (codeInfo.value.prize) {
-      outOfTurn.value = true
+      alert('Mã này đã hết lượt quay!')
+      router.replace('/user/login')
+      return
     }
   } catch (e) {
     alert('Không thể kết nối tới server!')
