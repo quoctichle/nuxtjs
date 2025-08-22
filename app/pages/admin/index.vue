@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 let XLSX
 const count = ref(10)
 const allCodes = ref([])
@@ -76,6 +76,10 @@ async function fetchCodes() {
 }
 
 onMounted(() => {
+  fetchCodes()
+})
+
+watch(count, () => {
   fetchCodes()
 })
 

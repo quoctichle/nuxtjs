@@ -40,18 +40,22 @@ async function onLogin() {
   }
   const codeInput = code.value.trim().toUpperCase()
   // Kiểm tra mã trên MongoDB qua API riêng
-  const res = await $fetch(`/api/spin-codes/${codeInput}`)
-  const found = res.data
-  if (found && !found.prize) {
-    localStorage.setItem('spin_code_used', codeInput)
-    localStorage.setItem('spin_fb', fb.value.trim())
-    localStorage.setItem('spin_cid', cid.value.trim())
-    localStorage.setItem('spin_email', email.value.trim())
-    localStorage.removeItem('spin_has_spun')
-    error.value = ''
-    router.push('/user/spin')
-  } else {
-    error.value = 'Spin code không hợp lệ hoặc đã hết lượt!'
+  try {
+    const res = await $fetch(`/api/spin-codes/${codeInput}`)
+    const found = res.data
+    if (found && !found.prize) {
+      localStorage.setItem('spin_code_used', codeInput)
+      localStorage.setItem('spin_fb', fb.value.trim())
+      localStorage.setItem('spin_cid', cid.value.trim())
+      localStorage.setItem('spin_email', email.value.trim())
+      localStorage.removeItem('spin_has_spun')
+      error.value = ''
+      router.push('/user/spin')
+    } else {
+      error.value = 'Spin code không hợp lệ hoặc đã hết lượt!'
+    }
+  } catch (e) {
+    error.value = 'Không thể kết nối tới server hoặc mã không tồn tại!'
   }
 }
 </script>
