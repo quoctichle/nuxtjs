@@ -64,7 +64,7 @@ async function generateCodes() {
   for (const code of codes) {
     await $fetch('/api/spin-codes', {
       method: 'POST',
-      body: { code }
+      body: { code: code.toUpperCase() }
     })
   }
   await fetchCodes()
