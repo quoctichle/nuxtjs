@@ -2,15 +2,14 @@
   <div class="admin-bg">
     <div class="admin-box">
       <div class="admin-title">Tạo mã quay thưởng</div>
-      <form @submit.prevent="generateCodes">
-        <label>Số lượng mã:</label>
-        <select v-model.number="count" class="admin-select">
-          <option :value="10">10</option>
-          <option :value="100">100</option>
-          <option :value="1000">1000</option>
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+        <label for="codeCount" style="margin-right: 8px;">Số lượng mã:</label>
+        <select id="codeCount" v-model="codeCount" style="height: 40px; min-width: 80px; border-radius: 8px; border: 1px solid #b6e388; padding: 0 12px; font-size: 16px;">
+          <option v-for="n in [10, 20, 50, 100]" :key="n" :value="n">{{ n }}</option>
         </select>
-        <button class="admin-btn" type="submit">Tạo mã</button>
-      </form>
+        <button @click="generateCodes" style="height: 40px; min-width: 120px; background: linear-gradient(90deg, #f9d423, #ff4e50); color: white; font-weight: bold; border: none; border-radius: 8px; margin-left: 8px; box-shadow: 0 2px 8px #f9d42333; cursor: pointer;">TẠO MÃ</button>
+        <button @click="deleteAllCodes" style="height: 40px; min-width: 120px; background: linear-gradient(90deg, #ff4e50, #f9d423); color: white; font-weight: bold; border: none; border-radius: 8px; margin-left: 8px; box-shadow: 0 2px 8px #ff4e5033; cursor: pointer;">XOÁ DỮ LIỆU</button>
+      </div>
       <div v-if="allCodes.length" class="admin-table-wrap">
         <div class="admin-codes-title">Bảng quản lý mã quay thưởng</div>
         <table class="admin-table">
@@ -40,7 +39,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 let XLSX
 const count = ref(10)
 const allCodes = ref([])
@@ -67,20 +66,24 @@ async function generateCodes() {
       body: { code: code.toUpperCase() }
     })
   }
-  await fetchCodes()
+  await fetchCodes() // Đảm bảo gọi lại sau khi tạo mã
 }
 
 async function fetchCodes() {
   const res = await $fetch('/api/spin-codes')
-  allCodes.value = res.data || []
+  // Sắp xếp theo createdAt tăng dần (mã mới ở dưới cùng)
+  allCodes.value = (res.data || []).sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+}
+
+async function deleteAllCodes() {
+  if (!confirm('Bạn có chắc chắn muốn xoá toàn bộ dữ liệu?')) return
+  await $fetch('/api/spin-codes', { method: 'DELETE' })
+  await fetchCodes()
 }
 
 onMounted(() => {
   fetchCodes()
-})
-
-watch(count, () => {
-  fetchCodes()
+  setInterval(fetchCodes, 5000)
 })
 
 async function exportExcel() {
@@ -163,6 +166,29 @@ async function exportExcel() {
   text-shadow: 1px 1px 4px #0005;
   text-transform: uppercase;
   transition: background 0.2s, box-shadow 0.2s;
+}
+.admin-form-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.delete-btn {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(180deg, #ff6b6b 0%, #ff922b 100%);
+  border: 2px solid #ff6b6b;
+  border-radius: 12px;
+  padding: 10px 32px;
+  cursor: pointer;
+  text-shadow: 1px 1px 4px #0005;
+  text-transform: uppercase;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px #0002;
+  display: block;
+}
+.delete-btn:active {
+  background: #ff922b;
 }
 .admin-table-wrap {
   margin-top: 32px;
