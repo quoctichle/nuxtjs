@@ -165,20 +165,15 @@ function onSpin() {
 }
 
 // Sau khi user quay xong và nhận giải thưởng, lưu thông tin vào bảng mã
-function saveUserInfoToAdmin(prize) {
+async function saveUserInfoToAdmin(prize) {
   const fb = localStorage.getItem('spin_fb') || ''
   const cid = localStorage.getItem('spin_cid') || ''
   const email = localStorage.getItem('spin_email') || ''
   const code = localStorage.getItem('spin_code_used') || ''
-  let codes = JSON.parse(localStorage.getItem('spin_codes_full') || '[]')
-  const idx = codes.findIndex(row => row.code === code)
-  if (idx !== -1) {
-    codes[idx].fb = fb
-    codes[idx].cid = cid
-    codes[idx].email = email
-    codes[idx].prize = prize
-    localStorage.setItem('spin_codes_full', JSON.stringify(codes))
-  }
+  await $fetch('/api/spin-codes', {
+    method: 'POST',
+    body: { code, fb, cid, email, prize }
+  })
 }
 
 // Trong logic quay xong, sau khi hiện popup giải thưởng:

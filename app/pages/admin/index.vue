@@ -43,26 +43,32 @@
 import { ref, onMounted } from 'vue'
 let XLSX
 const count = ref(10)
-const codes = ref([])
 const allCodes = ref([])
+
 function randomCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase()
 }
-function generateCodes() {
-  codes.value = Array.from({ length: count.value }, () => randomCode())
-  // Lưu vào localStorage dạng object để quản lý thông tin user và giải thưởng
-  let stored = JSON.parse(localStorage.getItem('spin_codes_full') || '[]')
-  const newRows = codes.value.map(code => ({ code, fb: '', cid: '', email: '', prize: '' }))
-  stored = [...stored, ...newRows]
-  localStorage.setItem('spin_codes_full', JSON.stringify(stored))
-  // Cập nhật lại bảng
-  allCodes.value = stored
-  // Cập nhật mảng mã đơn giản cho user login
-  localStorage.setItem('spin_codes', JSON.stringify(stored.map(row => row.code)))
+
+async function generateCodes() {
+  const codes = Array.from({ length: count.value }, () => randomCode())
+  for (const code of codes) {
+    await $fetch('/api/spin-codes', {
+      method: 'POST',
+      body: { code }
+    })
+  }
+  await fetchCodes()
 }
+
+async function fetchCodes() {
+  const res = await $fetch('/api/spin-codes')
+  allCodes.value = res.data || []
+}
+
 onMounted(() => {
-  allCodes.value = JSON.parse(localStorage.getItem('spin_codes_full') || '[]')
+  fetchCodes()
 })
+
 async function exportExcel() {
   if (!XLSX) {
     XLSX = await import('xlsx')

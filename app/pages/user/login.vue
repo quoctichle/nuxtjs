@@ -32,21 +32,21 @@ const email = ref('')
 const code = ref('')
 const error = ref('')
 const router = useRouter()
-function onLogin() {
+
+async function onLogin() {
   if (!fb.value.trim() || !cid.value.trim() || !email.value.trim() || !code.value.trim()) {
     error.value = 'Vui lòng nhập đầy đủ thông tin!'
     return
   }
   const codeInput = code.value.trim().toUpperCase()
-  let codes = JSON.parse(localStorage.getItem('spin_codes') || '[]')
-  if (codes.includes(codeInput)) {
-    // KHÔNG xóa mã khỏi spin_codes ở đây nữa
-    // Lưu trạng thái đã đăng nhập và thông tin user
+  // Kiểm tra mã trên MongoDB
+  const res = await $fetch('/api/spin-codes')
+  const found = (res.data || []).find(row => row.code === codeInput)
+  if (found && !found.prize) {
     localStorage.setItem('spin_code_used', codeInput)
     localStorage.setItem('spin_fb', fb.value.trim())
     localStorage.setItem('spin_cid', cid.value.trim())
     localStorage.setItem('spin_email', email.value.trim())
-    // Xóa cờ đã quay để cho phép quay nếu chưa quay
     localStorage.removeItem('spin_has_spun')
     error.value = ''
     router.push('/user/spin')
