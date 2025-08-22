@@ -39,9 +39,9 @@ async function onLogin() {
     return
   }
   const codeInput = code.value.trim().toUpperCase()
-  // Kiểm tra mã trên MongoDB
-  const res = await $fetch('/api/spin-codes')
-  const found = (res.data || []).find(row => row.code === codeInput)
+  // Kiểm tra mã trên MongoDB qua API riêng
+  const res = await $fetch(`/api/spin-codes/${codeInput}`)
+  const found = res.data
   if (found && !found.prize) {
     localStorage.setItem('spin_code_used', codeInput)
     localStorage.setItem('spin_fb', fb.value.trim())

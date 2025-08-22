@@ -50,7 +50,17 @@ function randomCode() {
 }
 
 async function generateCodes() {
-  const codes = Array.from({ length: count.value }, () => randomCode())
+  // Lấy danh sách mã hiện có từ MongoDB
+  const res = await $fetch('/api/spin-codes')
+  const existingCodes = new Set((res.data || []).map(row => row.code))
+  const codes = []
+  while (codes.length < count.value) {
+    const c = randomCode()
+    if (!existingCodes.has(c) && !codes.includes(c)) {
+      codes.push(c)
+    }
+  }
+  // Tạo mã mới trên MongoDB
   for (const code of codes) {
     await $fetch('/api/spin-codes', {
       method: 'POST',
