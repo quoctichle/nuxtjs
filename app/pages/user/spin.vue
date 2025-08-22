@@ -81,10 +81,9 @@ const spinning = ref(false)
 const showPopup = ref(false)
 const currentPrize = ref('')
 const code = localStorage.getItem('spin_code_used') || ''
-const codesFull = JSON.parse(localStorage.getItem('spin_codes_full') || '[]')
-const row = codesFull.find(r => r.code === code)
 const outOfTurn = ref(false)
 const hasSpun = ref(false)
+const codeInfo = ref(null)
 
 function segmentPath(idx) {
   const n = prizes.length
@@ -191,12 +190,27 @@ function showOutOfTurnPopup() {
   alert('Mã này đã hết lượt quay!')
 }
 
-onMounted(() => {
-  if (!code || !row) {
+onMounted(async () => {
+  if (!code) {
     alert('Mã không hợp lệ!')
     router.replace('/user/login')
-  } else if (row.prize) {
-    outOfTurn.value = true
+    return
+  }
+  // Lấy thông tin mã từ MongoDB
+  try {
+    const res = await $fetch(`/api/spin-codes/${code}`)
+    codeInfo.value = res.data
+    if (!codeInfo.value) {
+      alert('Mã không tồn tại!')
+      router.replace('/user/login')
+      return
+    }
+    if (codeInfo.value.prize) {
+      outOfTurn.value = true
+    }
+  } catch (e) {
+    alert('Không thể kết nối tới server!')
+    router.replace('/user/login')
   }
   if (localStorage.getItem('spin_has_spun') === '1') {
     hasSpun.value = true
