@@ -1,0 +1,12 @@
+{
+  "routes": [
+    {
+      "src": "/apndocomo.mobileconfig",
+      "headers": {
+        "Content-Type": "application/x-apple-aspen-config",
+        "Content-Disposition": "attachment; filename=\"apndocomo.mobileconfig\""
+      },
+      "dest": "/apndocomo.mobileconfig"
+    }
+  ]
+}
